@@ -142,6 +142,7 @@ class election : eosio::contract {
             p._candidate_key = _vote_key;
             p._account       = s;
         });
+        //
     };
 };
 
