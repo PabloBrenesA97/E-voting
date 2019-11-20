@@ -17,9 +17,7 @@ struct [[eosio::table("voter"), eosio::contract("election")]] voter {
     uint64_t    _key;
     uint64_t _candidate_key;
     eosio::name _account;
-    eosio::name _candidate;
     uint32_t    primary_key() const { return _key; };
-    uint32_t    candidate_key() const { return _candidate.value; };
 };
 using voter_table = eosio::multi_index<"voter"_n, voter>;
 
@@ -37,7 +35,7 @@ class election : eosio::contract {
 
         candidate_table table{get_self(), 0};
 
-        print("Adding candidate ", name, "\n");
+        print("Adding candidate ", name, " | ");
 
         uint64_t key = table.available_primary_key();
 
@@ -48,7 +46,7 @@ class election : eosio::contract {
             p._count = 0;
         });
 
-        print("Candidate added successfully. candidate_key = ", key, "\n");
+        print("Candidate added successfully. candidate_key = ", key, " ");
     };
 
     /// @abi action
@@ -83,15 +81,15 @@ class election : eosio::contract {
             }
         }
 
-        print("candidates and voters reset successfully.\n");
+        print("candidates and voters reset successfully.");
     };
 
     /// @abi action
     [[eosio::action]] void results() {
         candidate_table table_candidate{get_self(), 0};
-        print("Start listing voted results\n");
+        //print("Start listing voted results\n");
         for (auto& item : table_candidate) {
-            print("Candidate ", item._name, " has voted count: ", item._count, "\n");
+            print("Candidate ", item._name, " has voted count: ", item._count, " | ");
         }
     };
 
@@ -101,16 +99,16 @@ class election : eosio::contract {
 
         require_auth(s);
 
-        bool found = false;
+        //bool found = false;
 
         // Did the voter vote before?
         for (auto& item : table_voter) {
             if (item._account == s) {
-                found = true;
-                break;
+                print("Your vote has already been cast");
+                return;
             }
         }
-        print(!found, "You're voted already!");
+       // print(!found, "You're voted already!");
         candidate_table table_candidate{get_self(), 0};
         // Findout the candidate by id
         std::vector<uint64_t> keysForModify;
@@ -122,7 +120,7 @@ class election : eosio::contract {
         }
 
         if (keysForModify.size() == 0) {
-            print(found, "Invalid candidate id!");
+            print("Invalid candidate id!");
             return;
         }
 
@@ -133,7 +131,7 @@ class election : eosio::contract {
             if (itr != table_candidate.end()) {
                 table_candidate.modify(itr, get_self(), [&](auto& p) { p._count++; });
 
-                print("Voted candidate: ", candidate._name, " successfully\n");
+                print("Voted candidate: ", candidate._name, " successfully ");
             }
         }
         // Add this user to voters array
